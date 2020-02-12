@@ -1,0 +1,11 @@
+.flex{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title{
+    font-size: large;
+    padding: 5px;
+    width: 100%;
+}

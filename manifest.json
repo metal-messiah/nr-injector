@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "Apollo Credentials",
+    "version": "0.0.1",
+    "description": "Gets your Nike credentials for requestly",
+    "author": "Jordan Porter",
+    "permissions": [
+        "tabs",
+        "cookies",
+        "<all_urls>"
+    ],
+    "browser_action": {
+        "default_title": "Apollo Credentials",
+        "default_popup": "popup/index.html"
+    }
+}
