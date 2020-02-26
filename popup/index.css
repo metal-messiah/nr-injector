@@ -3,6 +3,9 @@
     align-items: center;
     justify-content: space-between;
 }
+.flex > * {
+    margin: 5px;
+}
 
 .title{
     font-size: large;
