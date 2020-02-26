@@ -1,4 +1,4 @@
-let jwt, appid, jsessionid, lastRefreshed, jwtCopy, appidCopy, jsessionIdCopy;
+let jwt, appid, jsessionid, lastRefreshed, goesStale, jwtCopy, appidCopy, jsessionIdCopy;
 
 const RELOAD_PAGE = 1200000;
 
@@ -9,6 +9,7 @@ async function init() {
   appid = document.querySelector('#appid');
   jsessionid = document.querySelector('#jsessionid');
   lastRefreshed = document.querySelector('#last-refreshed');
+  goesStale = document.querySelector('#goes-stale');
 
   jwtCopy = document.querySelector('#jwt-copy');
   appidCopy = document.querySelector('#appid-copy');
@@ -88,6 +89,12 @@ function setPage() {
   jwt.value = getToken('jwt');
   appid.value = getToken('appid');
   jsessionid.value = getToken('jsessionid');
+
+  const refreshed = new Date(getToken('refreshed'));
+  const stale = new Date(refreshed);
+  stale.setMilliseconds(stale.getMilliseconds() + RELOAD_PAGE);
+  lastRefreshed.innerHTML = `<b>Last Refreshed:</b> ${refreshed.toLocaleTimeString()}`;
+  goesStale.innerHTML = `<span><b>Tokens Go Stale:</b> ${stale.toLocaleTimeString()}</span><br/><span>(will fetch new tokens if needed)</span>`;
 }
 
 function setToken(name, value) {
@@ -100,7 +107,6 @@ function getToken(name) {
 
 function setTimestamps() {
   setToken('refreshed', new Date().toISOString());
-  lastRefreshed.innerText = `Last Refreshed: ${new Date().toLocaleTimeString()}`;
 }
 
 function getActiveTab(cb) {
