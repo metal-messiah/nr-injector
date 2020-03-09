@@ -27,6 +27,7 @@ async function init() {
     jsessionid.select();
     document.execCommand('copy');
   };
+  setPageTimestamps();
   getApolloPage();
 }
 
@@ -90,11 +91,15 @@ function setPage() {
   appid.value = getToken('appid');
   jsessionid.value = getToken('jsessionid');
 
+  setPageTimestamps();
+}
+
+function setPageTimestamps(){
   const refreshed = new Date(getToken('refreshed'));
   const stale = new Date(refreshed);
   stale.setMilliseconds(stale.getMilliseconds() + RELOAD_PAGE);
-  lastRefreshed.innerHTML = `<b>Last Refreshed:</b> ${refreshed.toLocaleTimeString()}`;
-  goesStale.innerHTML = `<span><b>Tokens Go Stale:</b> ${stale.toLocaleTimeString()}</span><br/><span>(will fetch new tokens if needed)</span>`;
+  lastRefreshed.innerHTML = `<b>Last Refreshed:</b> ${refreshed.toLocaleString()}`;
+  goesStale.innerHTML = `<span><b>Tokens Go Stale:</b> ${stale.toLocaleString()}</span><br/><span>(will fetch new tokens if needed)</span>`;
 }
 
 function setToken(name, value) {

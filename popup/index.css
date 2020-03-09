@@ -1,3 +1,6 @@
+body{
+    width: 250px;
+}
 .flex{
     display: flex;
     align-items: center;
@@ -10,5 +13,9 @@
 .title{
     font-size: large;
     padding: 5px;
+    width: 100%;
+}
+
+textarea{
     width: 100%;
 }
