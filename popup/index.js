@@ -4,7 +4,18 @@ const RELOAD_PAGE = 1200000;
 
 const localStorageKey = 'apolloCredentials';
 
-async function init() {
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('force-refresh');
+  // onClick's logic below:
+  btn.addEventListener('click', function () {
+    jwt.value = '... Loading ...';
+    appid.value = '... Loading ...';
+    jsessionid.value = '... Loading ...';
+    init(true);
+  });
+});
+
+async function init(forceReload = false) {
   jwt = document.querySelector('#jwt');
   appid = document.querySelector('#appid');
   jsessionid = document.querySelector('#jsessionid');
@@ -28,13 +39,13 @@ async function init() {
     document.execCommand('copy');
   };
   setPageTimestamps();
-  getApolloPage();
+  getApolloPage(forceReload);
 }
 
-async function getApolloPage() {
+async function getApolloPage(forceReload) {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ url: 'https://adminops-int.test.commerce.nikecloud.com/*' }, tabs => {
-      if (isStale()) {
+      if (isStale() || forceReload) {
         if (tabs.length && tabs[0].id) {
           // page exists, return first page it finds
           chrome.tabs.reload(tabs[0].id);
@@ -94,7 +105,7 @@ function setPage() {
   setPageTimestamps();
 }
 
-function setPageTimestamps(){
+function setPageTimestamps() {
   const refreshed = new Date(getToken('refreshed'));
   const stale = new Date(refreshed);
   stale.setMilliseconds(stale.getMilliseconds() + RELOAD_PAGE);
