@@ -1,139 +1,70 @@
-let jwt, appid, jsessionid, lastRefreshed, goesStale, jwtCopy, appidCopy, jsessionIdCopy;
-
-const RELOAD_PAGE = 1200000;
-
-const localStorageKey = 'apolloCredentials';
-
-document.addEventListener('DOMContentLoaded', function () {
-  const btn = document.getElementById('force-refresh');
-  // onClick's logic below:
-  btn.addEventListener('click', function () {
-    jwt.value = '... Loading ...';
-    appid.value = '... Loading ...';
-    jsessionid.value = '... Loading ...';
-    init(true);
-  });
-});
-
-async function init(forceReload = false) {
-  jwt = document.querySelector('#jwt');
-  appid = document.querySelector('#appid');
-  jsessionid = document.querySelector('#jsessionid');
-  lastRefreshed = document.querySelector('#last-refreshed');
-  goesStale = document.querySelector('#goes-stale');
-
-  jwtCopy = document.querySelector('#jwt-copy');
-  appidCopy = document.querySelector('#appid-copy');
-  jsessionidCopy = document.querySelector('#jsessionid-copy');
-
-  jwtCopy.onclick = () => {
-    jwt.select();
-    document.execCommand('copy');
-  };
-  appidCopy.onclick = () => {
-    appid.select();
-    document.execCommand('copy');
-  };
-  jsessionidCopy.onclick = () => {
-    jsessionid.select();
-    document.execCommand('copy');
-  };
-  setPageTimestamps();
-  getApolloPage(forceReload);
+const messageTypes = {
+    localStorage: 'localStorage',
+    localStorageKey: 'localStorageKey',
+    setLocalStorage: 'setLocalStorage',
 }
 
-async function getApolloPage(forceReload) {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ url: 'https://adminops-int.test.commerce.nikecloud.com/*' }, tabs => {
-      if (isStale() || forceReload) {
-        if (tabs.length && tabs[0].id) {
-          // page exists, return first page it finds
-          chrome.tabs.reload(tabs[0].id);
-          resolve(tabs[0]);
+const canTrack = async () => {
+    return !!Number(await getLocalStorage('canTrack'))
+}
+
+const getLocalStorage = (key) => {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({type: messageTypes.localStorageKey}, storageKey => {
+            chrome.runtime.sendMessage({type: messageTypes.localStorage, data: {key: `${storageKey}_${key}`}}, data => {
+                resolve(data);
+            })
+        })
+    })
+}
+
+const setInputValue = (selector, value) => {
+    document.querySelector(selector).value = value || "";
+}
+
+const setLabel = canTrack => {
+    document.querySelector("#canTrack").innerHTML = canTrack ? 'On' : 'Off';
+}
+
+const setLocalStorage = (data) => {
+    chrome.runtime.sendMessage({type: messageTypes.localStorageKey}, storageKey => {
+        chrome.runtime.sendMessage({type: messageTypes.setLocalStorage, data: {...data, key: `${storageKey}_${data.key}`}})
+    })
+}
+
+window.addEventListener('load', async () => {
+    setLabel(await canTrack());
+
+    setInputValue("#accountID", await getLocalStorage('accountID'))
+    setInputValue("#agentID", await getLocalStorage('agentID'))
+    setInputValue("#licenseKey", await getLocalStorage('licenseKey'))
+    setInputValue("#applicationID", await getLocalStorage('applicationID'))
+
+    // TODO -- get other versions of agent, link to select elem
+
+    document.querySelector("#btn").addEventListener("click", async () => {
+        const ct = await canTrack();
+        console.log('ct', ct);
+        const newCanTrack = !ct;
+        console.log("newCanTrack", newCanTrack);
+        setLabel(newCanTrack);
+
+        setLocalStorage({key: `canTrack`, val: Number(newCanTrack)})
+
+        if (!!newCanTrack){
+            document.querySelector("#helper-text").innerText = "Reload the page to START tracking"
         } else {
-          chrome.tabs.create({ active: false, url: 'https://adminops-int.test.commerce.nikecloud.com/apollov1' }, tab => {
-            resolve(tab);
-          });
+            document.querySelector("#helper-text").innerText = "Reload the page to STOP tracking"
         }
-      } else {
-        console.log('not stale, just reload it');
-        setPage();
-      }
-    });
-  });
-}
+    })
 
-async function getData() {
-  console.log('REFETCH THE PAGE STUFF');
-  setTimestamps();
-  const headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  };
-  const url = 'https://deledge.test.commerce.nikecloud.com/recommend/apollo_tokens/v1';
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-  });
-  const json = await response.json();
-  const { jwt: token, appId } = json;
-  setToken('jwt', `Bearer ${token}`);
-  setToken('appid', appId);
-  setPage();
-
-  chrome.cookies.getAll({ name: 'JSESSIONID', domain: 'adminops-int.test.commerce.nikecloud.com' }, cookies => {
-    if (cookies.length > 0) {
-      console.log(cookies[0]);
-      setToken('jsessionid', `JSESSIONID=${cookies[0].value}`);
-      setPage();
-    }
-  });
-}
-
-function isStale() {
-  const lastUpdated = new Date(getToken('refreshed'));
-  const now = new Date();
-  return now - lastUpdated > RELOAD_PAGE;
-}
-
-function setPage() {
-  jwt.value = getToken('jwt');
-  appid.value = getToken('appid');
-  jsessionid.value = getToken('jsessionid');
-
-  setPageTimestamps();
-}
-
-function setPageTimestamps() {
-  const refreshed = new Date(getToken('refreshed'));
-  const stale = new Date(refreshed);
-  stale.setMilliseconds(stale.getMilliseconds() + RELOAD_PAGE);
-  lastRefreshed.innerHTML = `<b>Last Refreshed:</b> ${refreshed.toLocaleString()}`;
-  goesStale.innerHTML = `<span><b>Tokens Go Stale:</b> ${stale.toLocaleString()}</span><br/><span>(will fetch new tokens if needed)</span>`;
-}
-
-function setToken(name, value) {
-  localStorage.setItem(`${localStorageKey}_${name}`, value);
-}
-
-function getToken(name) {
-  return localStorage.getItem(`${localStorageKey}_${name}`);
-}
-
-function setTimestamps() {
-  setToken('refreshed', new Date().toISOString());
-}
-
-function getActiveTab(cb) {
-  chrome.tabs.query({ active: true, currentWindow: true }, cb);
-}
-
-window.onload = () => init();
-
-chrome.webNavigation.onCompleted.addListener(details => {
-  const { url } = details;
-  if (url.includes('commerce.nikecloud.com')) {
-    getData();
-  }
-});
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', (val) => {
+            const newValue = val.target.value;
+            const elemID = val.target.id;
+            setLocalStorage({key: elemID, val: newValue})
+            
+            document.querySelector("#helper-text").innerText = "Reload the page to see changes"
+        })
+    })
+})

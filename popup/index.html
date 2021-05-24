@@ -6,28 +6,21 @@
 </head>
 
 <body>
-    <div class="title">AppID</div>
-    <div class="flex">
-        <textarea id="appid">... Loading ...</textarea>
-        <button id="appid-copy">Copy</button>
+    <h3 class="section">New Relic Injector</h2>
+    <div class="section">
+        <label for="accountID">Account ID</label><input type="text" id="accountID" placeholder="Account ID">
+        <label for="agentID">Agent ID</label><input type="text" id="agentID" placeholder="Agent ID">
+        <label for="applicationID">Application ID</label><input type="text" id="applicationID" placeholder="Application ID">
+        <label for="accountID">License Key</label><input type="text" id="licenseKey" placeholder="License Key">
+        <label for="nrVersion">NR Version</label><br />
+        <select id="nrVersion">
+            <option selected>1208</option>
+        </select>
     </div>
-    <hr />
-    <div class="title">JWT</div>
-    <div class="flex">
-        <textarea id="jwt">... Loading ...</textarea>
-        <button id="jwt-copy">Copy</button>
+    <div class="section">
+        <button id="btn">Tracking: </button><span id="canTrack"></span>
     </div>
-    <hr />
-    <div class="title">JSESSIONID</div>
-    <div class="flex">
-        <textarea id="jsessionid">... Loading ...</textarea>
-        <button id="jsessionid-copy">Copy</button id="appid-copy">
+    <div class="section">
+        <div id="helper-text"></div>
     </div>
-    <hr />
-    <div>
-        <button id="force-refresh">Force Refresh</button>
-    </div>
-    <hr />
-    <div id="last-refreshed"></div>
-    <div id="goes-stale"></div>
 </body>

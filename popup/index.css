@@ -1,21 +1,23 @@
-body{
-    width: 250px;
-}
-.flex{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.flex > * {
-    margin: 5px;
+#btn, .section > select {
+    margin-right: 10px;
 }
 
-.title{
-    font-size: large;
-    padding: 5px;
-    width: 100%;
+.section > input{
+    margin: 0 0 10px;
 }
 
-textarea{
+.section{
+    padding: 10px 25px;
+}
+
+#helper-text{
+    color: #017c86;
+}
+
+label {
+    color: #017c86;
+}
+
+select{
     width: 100%;
 }

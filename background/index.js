@@ -1,27 +1,32 @@
-/* Retrieve any previously set cookie and send to content script */
+const bg = chrome.extension.getBackgroundPage();
+const messageTypes = {
+    localStorage: 'localStorage',
+    localStorageKey: 'localStorageKey',
+    setLocalStorage: 'setLocalStorage',
+}
+const storageKey = 'nr-inserter';
 
-function getActiveTab() {
-  return browser.tabs.query({ active: true, currentWindow: true });
+const canTrack = () => !!Number(bg.window.localStorage.getItem(`${storageKey}_canTrack`));
+
+const getLocalStorage = (key) => {
+    return window.localStorage.getItem(key);
 }
 
-function cookieUpdate() {
-  getActiveTab().then(tabs => {
-    // get any previously set cookie for the current tab
-    var gettingCookies = browser.cookies.get({
-      url: tabs[0].url,
-      name: 'bgpicker',
-    });
-    gettingCookies.then(cookie => {
-      if (cookie) {
-        var cookieVal = JSON.parse(cookie.value);
-        browser.tabs.sendMessage(tabs[0].id, { image: cookieVal.image });
-        browser.tabs.sendMessage(tabs[0].id, { color: cookieVal.color });
-      }
-    });
-  });
+const setLocalStorage = (key, val) => {
+    window.localStorage.setItem(key, val);
 }
 
-// update when the tab is updated
-browser.tabs.onUpdated.addListener(cookieUpdate);
-// update when the tab is activated
-browser.tabs.onActivated.addListener(cookieUpdate);
+chrome.runtime.onMessage.addListener(({type, data}, sender, sendResponse) => {
+    switch(type){
+        case messageTypes.localStorage:
+            const val = getLocalStorage(data.key);
+            sendResponse(val);
+            break;
+        case messageTypes.localStorageKey:
+            sendResponse(storageKey);
+            break;
+        case messageTypes.setLocalStorage:
+            setLocalStorage(data.key, data.val);
+            break;
+    }
+})

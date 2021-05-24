@@ -1,12 +1,29 @@
 {
   "manifest_version": 2,
-  "name": "Apollo Credentials",
+  "name": "NR Injector",
   "version": "0.0.1",
-  "description": "Gets your Nike credentials for requestly",
+  "description": "Inject NR into page",
   "author": "Jordan Porter",
-  "permissions": ["tabs", "cookies", "storage", "webNavigation", "<all_urls>"],
+  "permissions": [],
   "browser_action": {
-    "default_title": "Apollo Credentials",
+    "default_title": "NR Injector",
     "default_popup": "popup/index.html"
+  },
+  "content_security_policy": "object-src 'self'; script-src 'self' sha256-rprxG7jnStB2wB4iccCbbwNnefU5XeNeNtbNWF0Fb4s= https://js-agent.newrelic.com https://staging-bam-cell.nr-data.net;",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["scripts/inject.js"],
+      "run_at":"document_start"
+    } 
+  ],
+  "web_accessible_resources": [
+      "scripts/*.js"
+  ],
+  "background": {
+    "scripts": ["background/index.js"],
+    "persistent": false
   }
 }
+
+
