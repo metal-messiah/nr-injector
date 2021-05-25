@@ -44,11 +44,8 @@ window.addEventListener('load', async () => {
 
     document.querySelector("#btn").addEventListener("click", async () => {
         const ct = await canTrack();
-        console.log('ct', ct);
         const newCanTrack = !ct;
-        console.log("newCanTrack", newCanTrack);
         setLabel(newCanTrack);
-
         setLocalStorage({key: `canTrack`, val: Number(newCanTrack)})
 
         if (!!newCanTrack){
